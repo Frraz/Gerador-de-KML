@@ -4,7 +4,7 @@ import sys
 import threading
 import customtkinter as ctk
 from tkinter import filedialog, messagebox, simpledialog, colorchooser
-from seu_script_completo import (
+from processamento import (
     criar_diretorios, formatar_csv, processar_csvs_para_kml, unir_kmls_em_um,
     set_callback_nome_area, set_callback_cor
 )
