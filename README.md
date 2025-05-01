@@ -1,23 +1,23 @@
 # 🌾 Gerador de KML Agrícola
 
-Uma aplicação simples e eficiente que converte arquivos CSV de coordenadas em arquivos KML prontos para uso em softwares de geolocalização como Google Earth.
+Uma aplicação prática e eficiente que converte arquivos CSV de coordenadas em arquivos KML prontos para uso em softwares de geolocalização como o Google Earth.
 
-Feito com interface gráfica em **CustomTkinter**, para facilitar o uso no dia a dia do agronegócio!
+Com interface gráfica desenvolvida em **CustomTkinter**, é ideal para facilitar o uso no dia a dia do **agronegócio**!
 
 ---
 
 ## ✨ Funcionalidades
 
-- Seleção de pasta contendo arquivos `.csv`.
-- Escolha de **cultura** (Soja, Milho) ou **cor personalizada** para o polígono.
-- Processamento automático dos arquivos:
+- Seleção de pastas com arquivos `.csv`.
+- Escolha de **cultura** (Soja, Milho) ou definição de **cor personalizada** para os polígonos.
+- Processamento automático com:
   - Formatação dos CSVs.
-  - Geração de KMLs individuais.
-  - Criação de um arquivo **KML unificado** com todos os polígonos.
+  - Geração de arquivos KML individuais.
+  - Criação de um **KML unificado** com todos os polígonos.
 - Interface gráfica amigável.
 - Barra de progresso e status em tempo real.
-- Permite editar os nomes das áreas durante o processamento.
-- Exportação compatível com sistemas de gestão agrícola.
+- Edição dos nomes das áreas durante o processamento.
+- Arquivos compatíveis com sistemas de gestão agrícola.
 
 ---
 
@@ -34,13 +34,13 @@ Feito com interface gráfica em **CustomTkinter**, para facilitar o uso no dia a
 
 ---
 
-## 📦 Instalação
+## 📦 Como Instalar
 
-1. Clone o repositório ou baixe os arquivos:
+1. Clone o repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/gerador-kml-agricola.git
-cd gerador-kml-agricola
+git clone https://github.com/Frraz/Gerador-de-KML.git
+cd Gerador-de-KML
 ```
 
 2. Instale as dependências:
@@ -49,7 +49,7 @@ cd gerador-kml-agricola
 pip install -r requirements.txt
 ```
 
-3. Execute o programa:
+3. Execute a aplicação:
 
 ```bash
 python main.py
@@ -57,58 +57,74 @@ python main.py
 
 ---
 
-## 🗂 Organização dos Arquivos
+## 🗂 Estrutura de Saída
 
-Após o processamento, a estrutura dentro da pasta escolhida será:
+Após o processamento, os arquivos gerados estarão organizados da seguinte forma:
 
 ```
 /SuaPastaSelecionada
-    ├── /csv           # CSVs formatados
-    ├── /kml           # Arquivos KML individuais
-    ├── /shapefiles    # (Reservado para futuras versões)
-    └── todos_poligonos.kml  # KML único com todos os polígonos
+├── /csv           # CSVs formatados
+├── /kml           # Arquivos KML individuais
+├── /shapefiles    # (Reservado para futuras versões)
+└── todos_poligonos.kml  # KML único com todos os polígonos
 ```
 
 ---
 
-## 👋 Instruções de Uso
+## 👨‍🌾 Como Usar
 
-1. Clique em **Procurar Pasta** e selecione a pasta contendo os arquivos `.csv`.
+1. Clique em **Procurar Pasta** e selecione a pasta com os arquivos `.csv`.
 2. Escolha a **cultura** ou defina uma **cor personalizada**.
 3. Clique em **Iniciar Processamento**.
-4. Informe os nomes das áreas conforme solicitado.
-5. Aguarde o processo terminar — seu KML estará pronto!
+4. Insira os nomes das áreas quando solicitado.
+5. Aguarde a finalização — o KML estará pronto!
 
 ---
 
-## ⚡ Compilar para EXE (Opcional)
+## ⚡ Gerar Executável (Opcional)
 
-Para gerar um executável:
+Para compilar o programa como `.exe` usando o **auto-py-to-exe**:
+
+1. Instale a ferramenta:
 
 ```bash
-pyinstaller --onefile --add-data "proj;proj" --noconsole main.py
+pip install auto-py-to-exe
 ```
 
-- O executável será gerado na pasta `/dist`.
-- Ideal para facilitar a distribuição sem necessidade de Python instalado.
+2. Execute o programa:
+
+```bash
+auto-py-to-exe
+```
+
+3. Na interface que abrir:
+   - Em **Script Location**, selecione o arquivo `main.py`.
+   - Marque a opção **One File**.
+   - Marque a opção **Window Based (noconsole)**.
+   - Em **Additional Files**, adicione a pasta `proj` com:  
+     ```
+     proj → proj
+     ```
+   - Clique em **Convert .py to .exe**.
+
+> O executável será gerado na pasta `/output` dentro do diretório do projeto.
 
 ---
 
-## 🧐 Notas Importantes
+## ⚠️ Observações
 
-- Certifique-se que os arquivos `.csv` tenham o formato correto (ponto, latitude, longitude...).
-- O aplicativo exige pelo menos 3 pontos válidos para formar um polígono.
-- Caso o nome da área seja deixado em branco, a área será ignorada.
+- Os arquivos `.csv` devem conter colunas no formato correto (ponto, latitude, longitude...).
+- Mínimo de **3 pontos válidos** é necessário para formar um polígono.
+- Se o nome da área for deixado em branco, ela será ignorada.
 
 ---
 
 ## 💬 Contato
 
-Desenvolvido por Warley.  
-📧 Email: warley.ferraz.wf@gmail.com
-📍 LinkedIn: https://www.linkedin.com/in/warley-ferraz-almeida-280a55185/
+Desenvolvido por **Warley Ferraz**  
+📧 Email: [warley.ferraz.wf@gmail.com](mailto:warley.ferraz.wf@gmail.com)  
+🔗 [LinkedIn](https://www.linkedin.com/in/warley-ferraz-almeida-280a55185/)
 
 ---
 
-> "Facilitando o agro com tecnologia." 🚜🌱
-
+> _"Facilitando o agro com tecnologia."_ 🚜🌱
