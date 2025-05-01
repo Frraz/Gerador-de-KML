@@ -70,6 +70,11 @@ Após o processamento, os arquivos gerados estarão organizados da seguinte form
 ```
 
 ---
+## 🖼️ Capturas de Tela
+
+### Tela Principal
+![Tela Principal](img/tela_principal.png)
+---
 
 ## 👨‍🌾 Como Usar
 
