@@ -1,3 +1,5 @@
+# main.py
+
 import glob
 import os
 import sys
@@ -6,7 +8,7 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox, simpledialog, colorchooser
 from processamento import (
     criar_diretorios, formatar_csv, processar_csvs_para_kml, unir_kmls_em_um,
-    set_callback_nome_area, set_callback_cor
+    set_callback_nome_area, set_callback_cor, baixar_e_importar_shapefiles
 )
 
 # Funções
@@ -49,9 +51,29 @@ def definir_cor_personalizada():
                 hover_color="#4a4a4a"
             )
 
-
 def pedir_nome_area(tamanho_area):
     return simpledialog.askstring("Nome da Área", f"Digite o nome da área (Tamanho: {tamanho_area} ha):")
+
+def pedir_adicionar_shapefiles():
+    return messagebox.askyesno(
+        "Adicionar Shapefiles de Fazenda",
+        "Deseja adicionar um ou mais shapefiles de fazenda ao KML final?"
+    )
+
+def pedir_recibo_e_nome_fazenda():
+    recibo = simpledialog.askstring(
+        "Recibo do CAR",
+        "Informe o número do recibo do CAR da fazenda (com ou sem pontos):"
+    )
+    if not recibo:
+        return None, None
+    nome = simpledialog.askstring(
+        "Nome para o shapefile",
+        "Informe o nome para este shapefile/fazenda:"
+    )
+    if not nome:
+        return None, None
+    return recibo.strip(), nome.strip().replace(" ", "_")
 
 def iniciar_processamento():
     caminho, cor = entrada_caminho.get().strip(), cor_selecionada.get()
@@ -75,6 +97,17 @@ def iniciar_processamento():
             for arquivo in glob.glob(f"{caminho}/*.csv"):
                 formatar_csv(arquivo, caminhos['csv'])
             processar_csvs_para_kml(caminhos['csv'], caminhos['kml'])
+
+            # NOVO: Pergunta se deseja adicionar shapefiles de fazenda
+            adicionar = pedir_adicionar_shapefiles()
+            if adicionar:
+                baixar_e_importar_shapefiles(
+                    pedir_recibo_e_nome_fazenda,
+                    caminhos['shapefiles'],
+                    caminhos['kml'],
+                    janela
+                )
+
             unir_kmls_em_um(caminhos['kml'], f"{caminho}/todos_poligonos.kml")
             messagebox.showinfo("Concluído", "Processamento finalizado!")
             status("✅ Finalizado!")

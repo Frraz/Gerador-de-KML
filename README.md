@@ -1,36 +1,39 @@
 # 🌾 Gerador de KML Agrícola
 
-Uma aplicação prática e eficiente que converte arquivos CSV de coordenadas em arquivos KML prontos para uso em softwares de geolocalização como o Google Earth.
+Uma aplicação prática e eficiente para converter arquivos CSV de coordenadas em arquivos KML prontos para uso em softwares de geolocalização, como o Google Earth.
 
-Com interface gráfica desenvolvida em **CustomTkinter**, é ideal para facilitar o uso no dia a dia do **agronegócio**!
+Desenvolvida com interface gráfica em **CustomTkinter**, é ideal para facilitar o dia a dia do **agronegócio**!
 
 ---
 
 ## ✨ Funcionalidades
 
-- Seleção de pastas com arquivos `.csv`.
-- Escolha de **cultura** (Soja, Milho) ou definição de **cor personalizada** para os polígonos.
-- Processamento automático com:
-  - Formatação dos CSVs.
-  - Geração de arquivos KML individuais.
+- Seleção fácil de pastas contendo arquivos `.csv`.
+- Escolha rápida de **cultura** (Soja, Milho) ou definição de **cor personalizada** para os polígonos.
+- Processamento automático:
+  - Formatação e padronização dos CSVs.
+  - Geração de arquivos KML individuais para cada área.
   - Criação de um **KML unificado** com todos os polígonos.
-- Interface gráfica amigável.
+- Interface gráfica moderna e intuitiva.
 - Barra de progresso e status em tempo real.
 - Edição dos nomes das áreas durante o processamento.
-- Arquivos compatíveis com sistemas de gestão agrícola.
+- Compatibilidade com sistemas de gestão agrícola.
+- **Nova função:** Adicione shapefiles de fazendas diretamente pelo número do recibo do CAR, baixando, convertendo e unificando ao KML final.
 
 ---
 
 ## 🛠 Tecnologias Utilizadas
 
-- Python
-- CustomTkinter
-- Pandas
-- GeoPandas
-- Shapely
-- SimpleKML
-- Colorama
-- PyProj
+- Python 3.10+
+- [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter)
+- [Pandas](https://pandas.pydata.org/)
+- [GeoPandas](https://geopandas.org/)
+- [Shapely](https://shapely.readthedocs.io/)
+- [SimpleKML](https://simplekml.readthedocs.io/)
+- [Colorama](https://pypi.org/project/colorama/)
+- [PyProj](https://pyproj4.github.io/pyproj/)
+- [Fiona](https://fiona.readthedocs.io/)
+- [Requests](https://docs.python-requests.org/)
 
 ---
 
@@ -38,42 +41,44 @@ Com interface gráfica desenvolvida em **CustomTkinter**, é ideal para facilita
 
 1. Clone o repositório:
 
-```bash
-git clone https://github.com/Frraz/Gerador-de-KML.git
-cd Gerador-de-KML
-```
+   ```bash
+   git clone https://github.com/Frraz/Gerador-de-KML.git
+   cd Gerador-de-KML
+   ```
 
 2. Instale as dependências:
 
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 3. Execute a aplicação:
 
-```bash
-python main.py
-```
+   ```bash
+   python main.py
+   ```
 
 ---
 
 ## 🗂 Estrutura de Saída
 
-Após o processamento, os arquivos gerados estarão organizados da seguinte forma:
+Após o processamento, os arquivos gerados estarão organizados assim:
 
 ```
 /SuaPastaSelecionada
 ├── /csv           # CSVs formatados
-├── /kml           # Arquivos KML individuais
-├── /shapefiles    # (Reservado para futuras versões)
-└── todos_poligonos.kml  # KML único com todos os polígonos
+├── /kml           # Arquivos KML individuais (incluindo fazendas adicionadas)
+├── /shapefiles    # Shapefiles das fazendas baixados e processados
+└── todos_poligonos.kml  # KML único com todos os polígonos e fazendas
 ```
 
 ---
+
 ## 🖼️ Capturas de Tela
 
 ### Tela Principal
 ![Tela Principal](img/tela_principal.png)
+
 ---
 
 ## 👨‍🌾 Como Usar
@@ -82,7 +87,8 @@ Após o processamento, os arquivos gerados estarão organizados da seguinte form
 2. Escolha a **cultura** ou defina uma **cor personalizada**.
 3. Clique em **Iniciar Processamento**.
 4. Insira os nomes das áreas quando solicitado.
-5. Aguarde a finalização — o KML estará pronto!
+5. Caso deseje, adicione shapefiles de fazendas informando o recibo do CAR e o nome da área.
+6. Aguarde a finalização — o KML será gerado automaticamente!
 
 ---
 
@@ -92,21 +98,21 @@ Para compilar o programa como `.exe` usando o **auto-py-to-exe**:
 
 1. Instale a ferramenta:
 
-```bash
-pip install auto-py-to-exe
-```
+   ```bash
+   pip install auto-py-to-exe
+   ```
 
 2. Execute o programa:
 
-```bash
-auto-py-to-exe
-```
+   ```bash
+   auto-py-to-exe
+   ```
 
 3. Na interface que abrir:
    - Em **Script Location**, selecione o arquivo `main.py`.
    - Marque a opção **One File**.
    - Marque a opção **Window Based (noconsole)**.
-   - Em **Additional Files**, adicione a pasta `proj` com:  
+   - Em **Additional Files**, adicione a pasta `proj` com:
      ```
      proj → proj
      ```
@@ -119,8 +125,9 @@ auto-py-to-exe
 ## ⚠️ Observações
 
 - Os arquivos `.csv` devem conter colunas no formato correto (ponto, latitude, longitude...).
-- Mínimo de **3 pontos válidos** é necessário para formar um polígono.
+- É necessário um mínimo de **3 pontos válidos** para formar um polígono.
 - Se o nome da área for deixado em branco, ela será ignorada.
+- Para adicionar shapefiles de fazendas, tenha em mãos o número do recibo do CAR conforme orientado na aplicação.
 
 ---
 

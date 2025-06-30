@@ -1,7 +1,11 @@
+# processamento.py
+
 import os
 import sys
 import re
 import glob
+import requests
+import zipfile
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Polygon, Point
@@ -158,7 +162,6 @@ def salvar_kml(gdf, caminho_saida, cor_preenchimento="7f000000"):
     kml.save(caminho_saida)
     print(Fore.GREEN + f"✔ KML salvo com simplekml: {caminho_saida}")
 
-
 def escolher_modelo():
     return cor_callback() if cor_callback else "ff096200"
 
@@ -217,3 +220,68 @@ def unir_kmls_em_um(diretorio_kml, caminho_saida_unico):
         print(Fore.GREEN + f"🎯 KML unificado salvo em: {caminho_saida_unico}")
     else:
         print(Fore.YELLOW + "⚠ Nenhum conteúdo válido para unir.")
+
+# ============== NOVA FUNÇÃO ==============
+
+def formatar_recibo_car(recibo):
+    return recibo.replace('.', '')
+
+def baixar_shape_zip(url, destino):
+    resp = requests.get(url)
+    resp.raise_for_status()
+    with open(destino, 'wb') as f:
+        f.write(resp.content)
+
+def extrair_e_renomear_shape(zip_path, pasta_destino, novo_nome):
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(pasta_destino)
+    exts = ['.shp', '.shx', '.dbf', '.prj', '.cpg', '.qix']
+    # Renomeia todos arquivos da extração para novo_nome
+    for ext in exts:
+        for arquivo in glob.glob(os.path.join(pasta_destino, f"*{ext}")):
+            os.rename(arquivo, os.path.join(pasta_destino, f"{novo_nome}{ext}"))
+
+def converter_shp_para_kml(shp_path, kml_path):
+    gdf = gpd.read_file(shp_path)
+    kml = simplekml.Kml()
+    for _, row in gdf.iterrows():
+        geom = row.geometry
+        if geom.geom_type == 'Polygon':
+            kml.newpolygon(outerboundaryis=list(geom.exterior.coords), name=row.get('nome', 'Fazenda'))
+        elif geom.geom_type == 'MultiPolygon':
+            for poly in geom.geoms:
+                kml.newpolygon(outerboundaryis=list(poly.exterior.coords), name=row.get('nome', 'Fazenda'))
+    kml.save(kml_path)
+
+def baixar_e_importar_shapefiles(callback_recibo_nome, pasta_shapefiles, pasta_kml, janela=None):
+    while True:
+        if janela:
+            janela.after(0, lambda: None)  # Garante atualização da interface
+        recibo, nome = callback_recibo_nome()
+        if not recibo or not nome:
+            break
+        recibo_fmt = formatar_recibo_car(recibo)
+        url = f"https://car.semas.pa.gov.br/site/consulta/imoveis/baixarShapeFile/{recibo_fmt}"
+        zip_path = os.path.join(pasta_shapefiles, f"{nome}.zip")
+        try:
+            print(Fore.CYAN + f"⬇️ Baixando {url} ...")
+            baixar_shape_zip(url, zip_path)
+            extrair_e_renomear_shape(zip_path, pasta_shapefiles, nome)
+            shp_path = os.path.join(pasta_shapefiles, f"{nome}.shp")
+            kml_path = os.path.join(pasta_kml, f"{nome}_fazenda.kml")
+            converter_shp_para_kml(shp_path, kml_path)
+            print(Fore.GREEN + f"✔ Shapefile {nome} convertido e salvo como {kml_path}")
+        except Exception as e:
+            print(Fore.RED + f"❌ Erro ao importar shapefile {nome}: {e}")
+        # Pergunta se deseja adicionar mais uma fazenda
+        if janela:
+            mais = messagebox.askyesno(
+                "Adicionar Outro Shapefile",
+                "Deseja adicionar outro shapefile de fazenda?"
+            )
+            if not mais:
+                break
+        else:
+            mais = input("Deseja adicionar outro shapefile? (s/n): ").strip().lower()
+            if mais != "s":
+                break
