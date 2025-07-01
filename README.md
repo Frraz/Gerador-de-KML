@@ -1,8 +1,23 @@
 # 🌾 Gerador de KML Agrícola
 
-Uma aplicação prática e eficiente para converter arquivos CSV de coordenadas em arquivos KML prontos para uso em softwares de geolocalização, como o Google Earth.
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey)
+![Status](https://img.shields.io/badge/status-ativo-brightgreen)
+![Stars](https://img.shields.io/github/stars/Frraz/Gerador-de-KML?style=social)
 
-Desenvolvida com interface gráfica em **CustomTkinter**, é ideal para facilitar o dia a dia do **agronegócio**!
+Uma aplicação gráfica para transformar arquivos CSV de coordenadas e dados do CAR em arquivos KML prontos para Google Earth, Mapas e outros sistemas de geolocalização. Ideal para produtores, engenheiros agrônomos e empresas do agro.
+
+> _"Facilitando o agro com tecnologia."_ 🚜🌱
+
+---
+
+## 🚀 Por que usar o Gerador de KML?
+
+- 100% visual, fácil de usar, sem necessidade de conhecimento em programação.
+- Gera KML unificado e arquivos individuais automaticamente.
+- Integração com dados do CAR: baixe e converta shapefiles por recibo.
+- Personalização de cores e culturas.
+- Pronto para grandes volumes de áreas e compatível com sistemas de gestão agrícola.
 
 ---
 
@@ -14,7 +29,7 @@ Desenvolvida com interface gráfica em **CustomTkinter**, é ideal para facilita
   - Formatação e padronização dos CSVs.
   - Geração de arquivos KML individuais para cada área.
   - Criação de um **KML unificado** com todos os polígonos.
-- Interface gráfica moderna e intuitiva.
+- Interface gráfica moderna e intuitiva (**CustomTkinter**).
 - Barra de progresso e status em tempo real.
 - Edição dos nomes das áreas durante o processamento.
 - Compatibilidade com sistemas de gestão agrícola.
@@ -37,22 +52,41 @@ Desenvolvida com interface gráfica em **CustomTkinter**, é ideal para facilita
 
 ---
 
+## 🏗 Pré-requisitos
+
+- Python 3.10 ou superior
+- (Opcional) Git instalado para clonar o repositório
+- Conexão com a internet para baixar shapefiles via CAR
+- Sistema operacional Windows ou Linux
+
+---
+
 ## 📦 Como Instalar
 
-1. Clone o repositório:
+1. **Clone o repositório:**
 
    ```bash
    git clone https://github.com/Frraz/Gerador-de-KML.git
    cd Gerador-de-KML
    ```
 
-2. Instale as dependências:
+2. **Crie e ative um ambiente virtual (recomendado):**
+
+   ```bash
+   python -m venv venv
+   # No Windows:
+   venv\Scripts\activate
+   # No Linux/macOS:
+   source venv/bin/activate
+   ```
+
+3. **Instale as dependências:**
 
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Execute a aplicação:
+4. **Execute a aplicação:**
 
    ```bash
    python main.py
@@ -74,7 +108,7 @@ Após o processamento, os arquivos gerados estarão organizados assim:
 
 ---
 
-## 🖼️ Capturas de Tela
+## 📸 Exemplos de Uso
 
 ### Tela Principal
 ![Tela Principal](img/tela_principal.png)
@@ -94,7 +128,25 @@ Após o processamento, os arquivos gerados estarão organizados assim:
 
 ## ⚡ Gerar Executável (Opcional)
 
-Para compilar o programa como `.exe` usando o **auto-py-to-exe**:
+Você pode compilar o programa como `.exe` usando o **PyInstaller** ou o **auto-py-to-exe**.
+
+#### Usando PyInstaller (recomendado):
+
+1. Instale a ferramenta:
+
+   ```bash
+   pip install pyinstaller
+   ```
+
+2. Gere o executável:
+
+   ```bash
+   pyinstaller --onefile --windowed main.py
+   ```
+
+3. O executável estará na pasta `/dist` dentro do diretório do projeto.
+
+#### Usando auto-py-to-exe (opcional):
 
 1. Instale a ferramenta:
 
@@ -102,23 +154,13 @@ Para compilar o programa como `.exe` usando o **auto-py-to-exe**:
    pip install auto-py-to-exe
    ```
 
-2. Execute o programa:
+2. Execute:
 
    ```bash
    auto-py-to-exe
    ```
 
-3. Na interface que abrir:
-   - Em **Script Location**, selecione o arquivo `main.py`.
-   - Marque a opção **One File**.
-   - Marque a opção **Window Based (noconsole)**.
-   - Em **Additional Files**, adicione a pasta `proj` com:
-     ```
-     proj → proj
-     ```
-   - Clique em **Convert .py to .exe**.
-
-> O executável será gerado na pasta `/output` dentro do diretório do projeto.
+3. Configure conforme desejar e clique em **Convert .py to .exe**.
 
 ---
 
@@ -128,6 +170,20 @@ Para compilar o programa como `.exe` usando o **auto-py-to-exe**:
 - É necessário um mínimo de **3 pontos válidos** para formar um polígono.
 - Se o nome da área for deixado em branco, ela será ignorada.
 - Para adicionar shapefiles de fazendas, tenha em mãos o número do recibo do CAR conforme orientado na aplicação.
+- **Não envie arquivos .exe ou grandes para este repositório!** Use a área de Releases do GitHub ou outro meio para compartilhar executáveis.
+
+---
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas!  
+Abra uma [issue](https://github.com/Frraz/Gerador-de-KML/issues) para sugestões, bugs ou dúvidas, ou envie um Pull Request com melhorias.
+
+---
+
+## 📄 Licença
+
+Este projeto está licenciado sob os termos da licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ---
 
@@ -138,5 +194,3 @@ Desenvolvido por **Warley Ferraz**
 🔗 [LinkedIn](https://www.linkedin.com/in/warley-ferraz-almeida-280a55185/)
 
 ---
-
-> _"Facilitando o agro com tecnologia."_ 🚜🌱
