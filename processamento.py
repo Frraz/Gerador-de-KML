@@ -9,8 +9,9 @@ import zipfile
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Polygon, Point
-from colorama import init, Fore, Style
+from colorama import init
 import simplekml
+import threading
 
 # Inicializa o colorama
 init(autoreset=True)
@@ -20,14 +21,17 @@ if getattr(sys, 'frozen', False):
     BASE_DIR = sys._MEIPASS
 else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    
+
 os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'proj')
 
-# Ajusta PROJ_LIB para funcionar corretamente no .exe
 import pyproj
 os.environ['PROJ_LIB'] = os.path.join(BASE_DIR, 'proj')
 
-# Callbacks de GUI
+try:
+    from tkinter import messagebox
+except ImportError:
+    messagebox = None
+
 nome_area_callback = None
 cor_callback = None
 
@@ -50,9 +54,9 @@ def criar_diretorios(base_path):
     return caminhos
 
 def formatar_csv(arquivo_csv, pasta_saida):
-    print("🔧 Entrou na função formatar_csv")
-    print(Fore.CYAN + f"📄 Formatando CSV: {arquivo_csv}")
-    
+    print("Entrou na função formatar_csv")
+    print(f"Formatando CSV: {arquivo_csv}")
+
     with open(arquivo_csv, 'r', encoding='utf-8') as file:
         linhas = file.readlines()
 
@@ -94,7 +98,7 @@ def formatar_csv(arquivo_csv, pasta_saida):
 
         nome_arquivo = nome_area_callback(tamanho_area) if nome_area_callback else f"area_{tamanho_area}"
         if not nome_arquivo:
-            print(Fore.RED + "❌ Nome inválido. Pulando esta área.")
+            print("Nome inválido. Pulando esta área.")
             continue
 
         nome_arquivo = re.sub(r'\s+', ' ', nome_arquivo).strip()
@@ -110,7 +114,7 @@ def formatar_csv(arquivo_csv, pasta_saida):
             contador += 1
 
         df_area.to_csv(caminho_saida, sep=',', index=False, encoding='utf-8')
-        print(Fore.GREEN + f"✔ Área salva como: {caminho_saida}")
+        print(f"Área salva como: {caminho_saida}")
 
 def carregar_csv_para_geodataframe(arquivo_csv):
     df = pd.read_csv(arquivo_csv)
@@ -131,132 +135,119 @@ def criar_poligono(gdf):
         raise ValueError("O polígono criado é inválido.")
     return poligono
 
-def salvar_kml(gdf, caminho_saida, cor_preenchimento="7f000000"):
-    nome_poligono = os.path.splitext(os.path.basename(caminho_saida))[0]
-    
+def salvar_kml(gdf, folder, cor_preenchimento=None):
+    nome_poligono = getattr(gdf, "nome_poligono", None)
+    if nome_poligono is None:
+        nome_poligono = "Polígono"
     coords = [(point.x, point.y) for point in gdf.geometry]
     if coords[0] != coords[-1]:
-        coords.append(coords[0])  # Fecha o polígono se necessário
-
-    kml = simplekml.Kml()
-    pol = kml.newpolygon(name=nome_poligono)
+        coords.append(coords[0])
+    pol = folder.newpolygon(name=nome_poligono)
     pol.outerboundaryis = coords
+    if cor_preenchimento:  # Personalizado para coordenadas
+        pol.style.polystyle.color = cor_preenchimento
+        pol.style.polystyle.fill = 1
+        pol.style.linestyle.width = 2
+    else:  # Padrão para shapes
+        pol.style.polystyle.fill = 0  # Sem preenchimento
 
-    # Convertendo cor do formato KML (AABBGGRR) para ARGB do simplekml
-    hex_color = cor_preenchimento
-    if len(hex_color) == 8:
-        # simplekml usa a ordem ABGR
-        pol.style.polystyle.color = simplekml.Color.changealphaint(
-            int(hex_color[:2], 16),  # Alpha
-            simplekml.Color.rgb(
-                int(hex_color[6:8], 16),  # R
-                int(hex_color[4:6], 16),  # G
-                int(hex_color[2:4], 16)   # B
-            )
-        )
-    pol.style.polystyle.fill = 1
-    pol.style.polystyle.outline = 1
-    pol.style.linestyle.width = 2
-    pol.style.linestyle.color = simplekml.Color.red  # Borda vermelha, pode ajustar
-
-    kml.save(caminho_saida)
-    print(Fore.GREEN + f"✔ KML salvo com simplekml: {caminho_saida}")
-
-def escolher_modelo():
-    return cor_callback() if cor_callback else "ff096200"
-
-def processar_csvs_para_kml(diretorio_csv, diretorio_kml):
-    print("📍 Entrou na função processar_csvs_para_kml")
-    print(Fore.MAGENTA + f"📂 Lendo arquivos CSV em: {diretorio_csv}")
+def processar_csvs_para_kml(diretorio_csv, folder, cor_preenchimento):
+    print("Entrou na função processar_csvs_para_kml")
+    print(f"Lendo arquivos CSV em: {diretorio_csv}")
     arquivos = glob.glob(os.path.join(diretorio_csv, "*.csv"))
-    print(Fore.MAGENTA + f"🔍 Encontrados: {len(arquivos)} arquivos CSV")
+    print(f"Encontrados: {len(arquivos)} arquivos CSV")
     if not arquivos:
-        print(Fore.YELLOW + "⚠ Nenhum arquivo CSV encontrado.")
+        print("Nenhum arquivo CSV encontrado.")
         return
-
-    cor = escolher_modelo()
-    print(Fore.MAGENTA + f"🎨 Cor selecionada: {cor}")
     for arquivo in arquivos:
         try:
-            print(Fore.LIGHTBLUE_EX + f"📍 Processando: {arquivo}")
+            print(f"Processando: {arquivo}")
             gdf = carregar_csv_para_geodataframe(arquivo)
-            print(Fore.CYAN + f"🔢 GeoDataFrame com {len(gdf)} pontos")
+            print(f"GeoDataFrame com {len(gdf)} pontos")
             if len(gdf) < 3:
-                print(Fore.YELLOW + "⚠ Área com menos de 3 pontos. Pulando.")
+                print("Área com menos de 3 pontos. Pulando.")
                 continue
-            nome_saida = os.path.splitext(os.path.basename(arquivo))[0].replace(" ", "_") + "_poligono.kml"
-            caminho_saida = os.path.join(diretorio_kml, nome_saida)
-            print(Fore.LIGHTBLUE_EX + f"💾 Salvando KML em: {caminho_saida}")
-            salvar_kml(gdf, caminho_saida, cor)
+            nome_saida = os.path.splitext(os.path.basename(arquivo))[0].replace(" ", "_")
+            gdf.nome_poligono = nome_saida
+            salvar_kml(gdf, folder, cor_preenchimento)
         except Exception as e:
-            print(Fore.RED + f"❌ Erro no arquivo {arquivo}: {e}")
+            print(f"Erro no arquivo {arquivo}: {e}")
 
-def unir_kmls_em_um(diretorio_kml, caminho_saida_unico):
-    print("📦 Entrou na função unir_kmls_em_um")
-    arquivos_kml = glob.glob(os.path.join(diretorio_kml, "*.kml"))
-    if not arquivos_kml:
-        print(Fore.YELLOW + "⚠ Nenhum KML encontrado para unir.")
-        return
-
-    placemarks = []
-    for arquivo in arquivos_kml:
+def adicionar_shapes_ao_folder(shp_dir, folder):
+    """
+    Para cada shapefile encontrado em shp_dir (inclusive em subpastas),
+    cria uma subpasta dentro de 'folder' com o nome da fazenda,
+    e adiciona os polígonos daquele shapefile nela.
+    """
+    arquivos_shp = glob.glob(os.path.join(shp_dir, "**", "*.shp"), recursive=True)
+    for arquivo in arquivos_shp:
         try:
-            with open(arquivo, 'r', encoding='utf-8') as f:
-                conteudo = f.read()
-                trechos = re.findall(r"<Style.*?</Style>|<Placemark.*?</Placemark>", conteudo, re.DOTALL)
-                placemarks.extend(trechos)
+            gdf = gpd.read_file(arquivo)
+            nome_fazenda = os.path.splitext(os.path.basename(arquivo))[0]
+            subfolder = folder.newfolder(name=nome_fazenda)
+            nome_col = None
+            # Tenta descobrir uma coluna de nome para os polígonos, caso exista
+            for c in ['uso', 'classeuso', 'nome', 'legenda', 'desc', 'tipo', 'CLASSE', 'DESCRICAO', 'DESCR', 'TIPO']:
+                if c.lower() in [x.lower() for x in gdf.columns]:
+                    nome_col = [x for x in gdf.columns if x.lower() == c.lower()][0]
+                    break
+            for _, row in gdf.iterrows():
+                placemark_name = row[nome_col] if nome_col else nome_fazenda
+                geom = row.geometry
+                if geom.geom_type == 'Polygon':
+                    poly = subfolder.newpolygon(outerboundaryis=list(geom.exterior.coords), name=str(placemark_name))
+                    poly.style.polystyle.fill = 0  # Sem preenchimento
+                elif geom.geom_type == 'MultiPolygon':
+                    for polygeom in geom.geoms:
+                        poly = subfolder.newpolygon(outerboundaryis=list(polygeom.exterior.coords), name=str(placemark_name))
+                        poly.style.polystyle.fill = 0  # Sem preenchimento
         except Exception as e:
-            print(Fore.RED + f"❌ Erro ao ler KML {arquivo}: {e}")
+            print(f"Erro ao processar shapefile {arquivo}: {e}")
 
-    if placemarks:
-        kml_final = f"""<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2">
-  <Document>
-    {"".join(placemarks)}
-  </Document>
-</kml>"""
-        with open(caminho_saida_unico, 'w', encoding='utf-8') as f:
-            f.write(kml_final)
-        print(Fore.GREEN + f"🎯 KML unificado salvo em: {caminho_saida_unico}")
-    else:
-        print(Fore.YELLOW + "⚠ Nenhum conteúdo válido para unir.")
-
-# ============== NOVA FUNÇÃO ==============
+def gerar_kml_unificado(diretorio_csv, cor_preenchimento, diretorio_shapefiles, caminho_saida_unico):
+    print("Gerando KML unificado...")
+    kml = simplekml.Kml()
+    # Pasta para os polígonos das coordenadas
+    folder_csv = kml.newfolder(name="Polígonos das Coordenadas")
+    processar_csvs_para_kml(diretorio_csv, folder_csv, cor_preenchimento)
+    # Pasta para os shapes
+    folder_shapes = kml.newfolder(name="Shapes das Fazendas")
+    adicionar_shapes_ao_folder(diretorio_shapefiles, folder_shapes)
+    kml.save(caminho_saida_unico)
+    print(f"KML unificado salvo em: {caminho_saida_unico}")
 
 def formatar_recibo_car(recibo):
     return recibo.replace('.', '')
 
 def baixar_shape_zip(url, destino):
-    resp = requests.get(url)
-    resp.raise_for_status()
+    try:
+        resp = requests.get(url, verify=True)
+        resp.raise_for_status()
+    except requests.exceptions.SSLError:
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        resp = requests.get(url, verify=False)
+        resp.raise_for_status()
     with open(destino, 'wb') as f:
         f.write(resp.content)
 
 def extrair_e_renomear_shape(zip_path, pasta_destino, novo_nome):
+    pasta_fazenda = os.path.join(pasta_destino, novo_nome)
+    os.makedirs(pasta_fazenda, exist_ok=True)
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(pasta_destino)
+        zip_ref.extractall(pasta_fazenda)
     exts = ['.shp', '.shx', '.dbf', '.prj', '.cpg', '.qix']
-    # Renomeia todos arquivos da extração para novo_nome
     for ext in exts:
-        for arquivo in glob.glob(os.path.join(pasta_destino, f"*{ext}")):
-            os.rename(arquivo, os.path.join(pasta_destino, f"{novo_nome}{ext}"))
+        for arquivo in glob.glob(os.path.join(pasta_fazenda, f"*{ext}")):
+            base = os.path.join(pasta_fazenda, f"{novo_nome}{ext}")
+            if not os.path.exists(base):
+                os.rename(arquivo, base)
+    return os.path.join(pasta_fazenda, f"{novo_nome}.shp")
 
-def converter_shp_para_kml(shp_path, kml_path):
-    gdf = gpd.read_file(shp_path)
-    kml = simplekml.Kml()
-    for _, row in gdf.iterrows():
-        geom = row.geometry
-        if geom.geom_type == 'Polygon':
-            kml.newpolygon(outerboundaryis=list(geom.exterior.coords), name=row.get('nome', 'Fazenda'))
-        elif geom.geom_type == 'MultiPolygon':
-            for poly in geom.geoms:
-                kml.newpolygon(outerboundaryis=list(poly.exterior.coords), name=row.get('nome', 'Fazenda'))
-    kml.save(kml_path)
-
-def baixar_e_importar_shapefiles(callback_recibo_nome, pasta_shapefiles, pasta_kml, janela=None):
+def baixar_e_importar_shapefiles(callback_recibo_nome, pasta_shapefiles, janela=None):
     while True:
         if janela:
-            janela.after(0, lambda: None)  # Garante atualização da interface
+            janela.after(0, lambda: None)
         recibo, nome = callback_recibo_nome()
         if not recibo or not nome:
             break
@@ -264,22 +255,27 @@ def baixar_e_importar_shapefiles(callback_recibo_nome, pasta_shapefiles, pasta_k
         url = f"https://car.semas.pa.gov.br/site/consulta/imoveis/baixarShapeFile/{recibo_fmt}"
         zip_path = os.path.join(pasta_shapefiles, f"{nome}.zip")
         try:
-            print(Fore.CYAN + f"⬇️ Baixando {url} ...")
+            print(f"Baixando {url} ...")
             baixar_shape_zip(url, zip_path)
             extrair_e_renomear_shape(zip_path, pasta_shapefiles, nome)
-            shp_path = os.path.join(pasta_shapefiles, f"{nome}.shp")
-            kml_path = os.path.join(pasta_kml, f"{nome}_fazenda.kml")
-            converter_shp_para_kml(shp_path, kml_path)
-            print(Fore.GREEN + f"✔ Shapefile {nome} convertido e salvo como {kml_path}")
+            print(f"Shapefile {nome} baixado e extraído.")
         except Exception as e:
-            print(Fore.RED + f"❌ Erro ao importar shapefile {nome}: {e}")
-        # Pergunta se deseja adicionar mais uma fazenda
-        if janela:
-            mais = messagebox.askyesno(
-                "Adicionar Outro Shapefile",
-                "Deseja adicionar outro shapefile de fazenda?"
-            )
-            if not mais:
+            print(f"Erro ao importar shapefile {nome}: {e}")
+            if janela and messagebox:
+                errormsg = f"Erro ao importar shapefile {nome}:\n{e}"
+                janela.after(0, lambda msg=errormsg: messagebox.showerror("Erro", msg))
+        if janela and messagebox:
+            resposta, evento = {"val": False}, threading.Event()
+            def perguntar():
+                resposta["val"] = messagebox.askyesno(
+                    "Adicionar Outro Shapefile",
+                    "Deseja adicionar outro shapefile de fazenda?",
+                    parent=janela
+                )
+                evento.set()
+            janela.after(0, perguntar)
+            evento.wait()
+            if not resposta["val"]:
                 break
         else:
             mais = input("Deseja adicionar outro shapefile? (s/n): ").strip().lower()
